@@ -1,8 +1,8 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven3'
+    tools { 
+        maven 'Maven3' 
     }
 
     environment {
@@ -14,7 +14,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/mruthiks1/nexus_hw6.git'
+                    url: 'https://github.com/mruthiks1/nexus_hw6.git',
+                    credentialsId: 'github-creds'
             }
         }
 
@@ -24,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Upload to Nexus') {
+        stage('Deploy to Nexus') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'nexus-creds',
@@ -33,18 +34,29 @@ pipeline {
                 )]) {
 
                     sh '''
-                    mvn deploy:deploy-file \
-                      -Durl=$NEXUS_URL \
-                      -DrepositoryId=nexus \
-                      -Dfile=target/helloworld-0.0.1-SNAPSHOT.jar \
-                      -DgroupId=com.example \
-                      -DartifactId=helloworld \
-                      -Dversion=0.0.1 \
-                      -Dpackaging=jar \
-                      -DgeneratePom=true \
-                      -Dusername=$NEXUS_USER \
-                      -Dpassword=$NEXUS_PASS
-                    '''
+cat > settings.xml <<EOF
+<settings>
+  <servers>
+    <server>
+      <id>nexus</id>
+      <username>${NEXUS_USER}</username>
+      <password>${NEXUS_PASS}</password>
+    </server>
+  </servers>
+</settings>
+EOF
+
+mvn deploy:deploy-file \
+  -Durl=$NEXUS_URL \
+  -DrepositoryId=nexus \
+  -Dfile=target/helloworld-0.0.1-SNAPSHOT.jar \
+  -DgroupId=com.example \
+  -DartifactId=helloworld \
+  -Dversion=0.0.1 \
+  -Dpackaging=jar \
+  -DgeneratePom=true \
+  --settings settings.xml
+'''
                 }
             }
         }
@@ -52,7 +64,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
         }
     }
 }
