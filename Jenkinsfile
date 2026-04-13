@@ -6,8 +6,8 @@ pipeline {
     }
 
     environment {
-        NEXUS_URL = 'http://localhost:8081/repository/maven-releases/'
-        NEXUS_CREDENTIALS = credentials('nexus-creds')
+    NEXUS_URL = 'http://host.docker.internal:8081/repository/maven-releases/'
+    NEXUS_CREDENTIALS = credentials('nexus-creds')
     }
 
     stages {
