@@ -14,30 +14,32 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/kevinli-webbertech/helloworld-springboot.git'
+                git branch: 'main',
+                    url: 'https://github.com/kevinli-webbertech/helloworld-springboot.git',
+                    credentialsId: 'github-creds'
             }
         }
 
         stage('Build') {
             steps {
-                bat 'mvn clean package'
+                sh 'mvn clean package'
             }
         }
 
         stage('Upload to Nexus') {
             steps {
-                bat """
-                mvn deploy:deploy-file ^
-                -Durl=%NEXUS_URL% ^
-                -DrepositoryId=nexus ^
-                -Dfile=target\\helloworld-0.0.1-SNAPSHOT.jar ^
-                -DgroupId=com.example ^
-                -DartifactId=helloworld ^
-                -Dversion=0.0.1 ^
-                -Dpackaging=jar ^
-                -DgeneratePom=true ^
-                -Dusername=%NEXUS_CREDENTIALS_USR% ^
-                -Dpassword=%NEXUS_CREDENTIALS_PSW%
+                sh """
+                mvn deploy:deploy-file \
+                -Durl=$NEXUS_URL \
+                -DrepositoryId=nexus \
+                -Dfile=target/helloworld-0.0.1-SNAPSHOT.jar \
+                -DgroupId=com.example \
+                -DartifactId=helloworld \
+                -Dversion=0.0.1 \
+                -Dpackaging=jar \
+                -DgeneratePom=true \
+                -Dusername=$NEXUS_CREDENTIALS_USR \
+                -Dpassword=$NEXUS_CREDENTIALS_PSW
                 """
             }
         }
@@ -45,7 +47,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: '**\\target\\*.jar', fingerprint: true
+            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
         }
     }
 }
