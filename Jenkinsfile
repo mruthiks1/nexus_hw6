@@ -15,7 +15,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/kevinli-webbertech/helloworld-springboot.git',
+                    url: 'https://github.com/mruthiks1/nexus_hw6.git'',
                     credentialsId: 'github-creds'
             }
         }
